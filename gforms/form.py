@@ -431,8 +431,8 @@ class Form:
             session=None, *,
             need_receipt=False,
             captcha_handler: Optional[Callable[[requests.models.Response], str]] = None,
-            emulate_history=False
-            extract_image_links=False,
+            emulate_history=False,
+            extract_image_links=False
     ) -> Optional[SubmissionResult]:
         """Submits the form.
 
