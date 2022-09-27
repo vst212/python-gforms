@@ -432,7 +432,8 @@ class Form:
             need_receipt=False,
             captcha_handler: Optional[Callable[[requests.models.Response], str]] = None,
             emulate_history=False
-    ) -> SubmissionResult:
+            extract_image_links=False,
+    ) -> Optional[SubmissionResult]:
         """Submits the form.
 
         The form must be loaded, (optionally) filled and validated.
@@ -496,6 +497,9 @@ class Form:
 
         while page is not None:
             next_page = page.next_page()
+            # Don't send the last request (prevent actual form submission) if you only need to extract links
+            if next_page is None and extract_image_links:
+                return
             # solve the CAPTCHA to submit the form and send a receipt
             if need_receipt and next_page is None:
                 captcha_response = captcha_handler(last_response)
@@ -504,6 +508,12 @@ class Form:
                                               need_receipt=need_receipt,
                                               captcha_response=captcha_response)
             soup = BeautifulSoup(last_response.text, 'html.parser')
+            if extract_image_links:
+                for tag in soup.find_all('img'):
+                    # Some additional filtering may be needed (e.g. filter by tag's class attribute or surrounding tags).
+                    if self._is_form_image(tag):
+                        # Don't forget to initialize self.image_links in `Form._clear`
+                        self.image_links.append(tag['src'])
             history = self._get_history(soup)
             draft = self._get_draft(soup)
             if next_page is None and history is None:
