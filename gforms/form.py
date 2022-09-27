@@ -511,9 +511,11 @@ class Form:
             if extract_image_links:
                 for tag in soup.find_all('img'):
                     # Some additional filtering may be needed (e.g. filter by tag's class attribute or surrounding tags).
-                    if self._is_form_image(tag):
+                    try:
                         # Don't forget to initialize self.image_links in `Form._clear`
                         self.image_links.append(tag['src'])
+                    except:
+                        pass
             history = self._get_history(soup)
             draft = self._get_draft(soup)
             if next_page is None and history is None:
